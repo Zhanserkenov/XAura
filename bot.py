@@ -138,7 +138,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply = ask_gemini(user_input, product_text, MARKETING_PLAN)
 
     if any(word in user_input for word in ["прайс", "цены", "стоимость", "цена", "сколько стоит"]):
-        price_image_path = "images/price_list.png"
+        price_image_path = "images/price.png"
         if os.path.exists(price_image_path):
             with open(price_image_path, "rb") as img:
                 await update.message.reply_photo(photo=img, caption="Вот прайс-лист на продукцию.")
