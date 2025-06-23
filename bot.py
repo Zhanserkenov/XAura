@@ -2,7 +2,9 @@ import os
 import requests
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, ContextTypes, filters
-from config import GEMINI_API_KEY, TELEGRAM_BOT_TOKEN
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
 # --- Загрузка данных о продуктах из .txt ---
 def load_products(file_path="products.txt"):
