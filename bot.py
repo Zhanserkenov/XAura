@@ -20,12 +20,16 @@ def load_products(file_path="products.txt"):
                 product["name"] = line.replace("Название:", "").strip()
             elif line.startswith("Описание:"):
                 product["description"] = line.replace("Описание:", "").strip()
-            elif line.startswith("Изображение:"):
-                product["image"] = line.replace("Изображение:", "").strip()
         products.append(product)
     return products
 
 PRODUCTS = load_products()
+
+def load_marketing_plan(file_path="marketing.txt"):
+    with open(file_path, "r", encoding="utf-8") as f:
+        return f.read().strip()
+
+MARKETING_PLAN = load_marketing_plan()
 
 DISEASE_IMAGE_MAP = {
     "грыжа шейного диска": "images/neck_hernia.png",
@@ -60,7 +64,7 @@ DISEASE_IMAGE_MAP = {
     "гинекологические заболевания": "images/gynecology.png",
     "мужские болезни": "images/male.png",
     "альцгеймер": "images/alzheimer.png",
-    "витилиго": "images/vitiligo.png"
+    "витилиго": "images/vitiligo.png",
 }
 
 def get_products_text():
@@ -68,26 +72,23 @@ def get_products_text():
 
 
 # --- Обращение к Gemini через REST API ---
-def ask_gemini(user_input: str, product_info: str) -> str:
+def ask_gemini(user_input: str, product_info: str, marketing_plan: str) -> str:
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
-    headers = {
-        "Content-Type": "application/json"
-    }
+    headers = { "Content-Type": "application/json" }
 
-    prompt = f"""Ты — консультант по продуктам. Отвечай кратко и понятно.
+    prompt = f"""Ты — консультант по продукции и маркетинг плану. Отвечай кратко и понятно.
 Информация о продуктах:
 {product_info}
+
+Информация о маркетинг плане:
+{marketing_plan}
 
 Вопрос клиента: {user_input}
 """
 
     body = {
         "contents": [
-            {
-                "parts": [
-                    { "text": prompt }
-                ]
-            }
+            { "parts": [ { "text": prompt } ] }
         ]
     }
 
@@ -134,7 +135,17 @@ def is_equivalent_with_gemini(user_text: str, disease_name: str) -> bool:
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_input = update.message.text
     product_text = get_products_text()
-    reply = ask_gemini(user_input, product_text)
+    reply = ask_gemini(user_input, product_text, MARKETING_PLAN)
+
+    if any(word in user_input for word in ["прайс", "цены", "стоимость", "цена", "сколько стоит"]):
+        price_image_path = "images/price_list.png"
+        if os.path.exists(price_image_path):
+            with open(price_image_path, "rb") as img:
+                await update.message.reply_photo(photo=img, caption="Вот прайс-лист на продукцию.")
+                return
+        else:
+            await update.message.reply_text("Прайс-лист временно недоступен.")
+            return
 
     for disease, image_path in DISEASE_IMAGE_MAP.items():
         if is_equivalent_with_gemini(user_input, disease):
