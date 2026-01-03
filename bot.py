@@ -73,7 +73,7 @@ def get_products_text():
 
 # --- Обращение к Gemini через REST API ---
 def ask_gemini(user_input: str, product_info: str, marketing_plan: str) -> str:
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
     headers = { "Content-Type": "application/json" }
 
     prompt = f"""Ты — консультант по продукции и маркетинг плану. Отвечай кратко и понятно.
